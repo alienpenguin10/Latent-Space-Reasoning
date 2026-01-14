@@ -35,7 +35,7 @@ def main(args):
         max_seq_length = args.max_prompt_length + args.max_completion_length,
         load_in_4bit = False,
         load_in_8bit = False,
-        fast_inference = False,
+        fast_inference = True,  # Required for vLLM support
     )
     model.answer_start = ANSWER_START
 
@@ -57,7 +57,7 @@ def main(args):
     # Removed reset_lambda_parameters (HRPO specific)
 
     training_args = GRPOConfig(
-        use_vllm = False,
+        use_vllm = True,
         learning_rate = args.lr,
         beta = args.beta,
         adam_beta1 = 0.9,
@@ -80,6 +80,8 @@ def main(args):
         save_strategy = "no",
         report_to = "wandb",
         output_dir = exp_name,
+        dataloader_num_workers = 4,  # Parallel data loading
+        dataloader_prefetch_factor = 2,  # Prefetch batches
     )
 
     dataset = preprocess_gsm8k('train', chunk_size=500)
@@ -99,7 +101,9 @@ def main(args):
     # Save the final merged model locally
     print(f"Saving final merged model to {exp_name}")
     model.save_pretrained_merged(exp_name, tokenizer, save_method="merged_16bit")
-
+    
+    model.push_to_hub_merged(f"Alienpenguin10/{exp_name}", tokenizer, save_method = "merged_16bit")
+    
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--lora_rank", type=int, default=32)
@@ -128,6 +132,7 @@ if __name__ == "__main__":
     # Set keys from env if present (overrides if passed/set before)
     if not os.environ.get("WANDB_API_KEY"):
          print("Warning: WANDB_API_KEY not found in environment.")
-    
+    if not os.environ.get("HF_TOKEN"):
+         print("Warning: HF_TOKEN not found in environment.")
 
     main(args)

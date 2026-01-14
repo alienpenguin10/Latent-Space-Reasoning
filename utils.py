@@ -51,12 +51,12 @@ def get_reward_func(process_answer_func):
 
         rewards = [1.0 if a and m else 0.0 for a, m in zip(accuracy, matches)]
 
-        print(
-            "=" * 50,
-            f"\nBatch accuracy: " + "".join("Y" if r > 0 else "N" for r in rewards),
-            f"\n1/{len(completions)} responses (answer: {ans[0]}):\n{responses[0]}",
-            "\n" + "=" * 50,
-        )
+        # print(
+        #     "=" * 50,
+        #     f"\nBatch accuracy: " + "".join("Y" if r > 0 else "N" for r in rewards),
+        #     f"\n1/{len(completions)} responses (answer: {ans[0]}):\n{responses[0]}",
+        #     "\n" + "=" * 50,
+        # )
         return rewards
     
     return reward_func
@@ -96,12 +96,12 @@ def reward_func_rag(completions, answer, **kwargs) -> list[float]:
 
     rewards = [1.0 if a and m else 0.0 for a, m in zip(accuracy, matches)]
 
-    print(
-        "=" * 50,
-        f"\nBatch accuracy: " + "".join("Y" if r > 0 else "N" for r in rewards),
-        f"\n1/{len(completions)} responses (answer: {answer[0]}):\n{responses[0]}",
-        "\n" + "=" * 50,
-    )
+    # print(
+    #     "=" * 50,
+    #     f"\nBatch accuracy: " + "".join("Y" if r > 0 else "N" for r in rewards),
+    #     f"\n1/{len(completions)} responses (answer: {answer[0]}):\n{responses[0]}",
+    #     "\n" + "=" * 50,
+    # )
     return rewards
 
 
@@ -112,7 +112,7 @@ def delete_extra_zero(n):
         try:
             n = eval(n)
         except:
-            print("Conversion to floating number fails: {}".format(n))
+            # print("Conversion to floating number fails: {}".format(n))
             return n
     if isinstance(n, int):
         return str(n)

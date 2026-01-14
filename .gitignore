@@ -13,3 +13,5 @@ wandb/
 trained_models/
 Reports/
 lambda/
+grpo_trainer_lora_model_0/
+experiments/
