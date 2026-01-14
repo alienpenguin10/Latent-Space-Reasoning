@@ -15,4 +15,4 @@ CUDA_VISIBLE_DEVICES=0 python grpo_baseline_gsm8k.py
   --max_completion_length 1024
 
 
-CUDA_VISIBLE_DEVICES=0 python eval_gsm8k.py --checkpoint_path PATH/TO/CHECKPOINT --batch_size BATCH_SIZE --greedy
+CUDA_VISIBLE_DEVICES=0 python eval_baseline_gsm8k.py --checkpoint_path ./experiments/Qwen2.5-1.5B-Instruct-gsm8k-baseline-group8-lora32-temp0.5 --batch_size 64 --greedy

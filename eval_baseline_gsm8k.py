@@ -90,8 +90,6 @@ def evaluate_model(
                 temperature=temperature,
                 max_new_tokens=512,
             ),
-            processing_class=tokenizer,
-            is_inference=is_inference,
         )
 
         # Process each generated response
@@ -157,7 +155,7 @@ if __name__ == "__main__":
 
     base_model = None
     checkpoint_path = args.checkpoint_path
-    base_models = ["Qwen/Qwen2.5-1.5B-Instruct", "Qwen/Qwen2.5-3B-Instruct"]
+    base_models = ["Qwen/Qwen2.5-1.5B-Instruct"]
     for model in base_models:
         if model.split('/')[-1] in checkpoint_path:
             base_model = model
