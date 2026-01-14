@@ -14,7 +14,6 @@ from utils import *
 
 def evaluate_model(
     model_path: str,
-    adapter_path: str,
     temperature: float,
     is_inference: bool,
     batch_size: int = 4,
@@ -31,7 +30,6 @@ def evaluate_model(
     tokenizer.padding_side = "left"
     tokenizer.pad_token = tokenizer.eos_token
 
-    model.load_adapter(adapter_path)
     model = FastLanguageModel.for_inference(model)
 
     dataset = load_dataset('openai/gsm8k', 'main')['test']
@@ -136,12 +134,12 @@ def evaluate_model(
         'accuracy': accuracy,
         'correct': correct,
         'total': total,
-        'model_path': adapter_path,
+        'model_path': model_path,
         'timestamp': datetime.now().isoformat()
     }
 
     if save_results:
-        save_path = adapter_path + "/eval_results.json"
+        save_path = model_path + "/eval_results.json"
         with open(save_path, 'w') as f:
             json.dump({'metrics': metrics, 'results': results}, f, indent=2)
         print(f"\nResults saved to {save_path}")
@@ -169,8 +167,7 @@ if __name__ == "__main__":
     if 'eval_results.json' not in os.listdir(checkpoint_path):
         print(f"Starting GSM8k evaluation on {checkpoint_path}")
         metrics = evaluate_model(
-            model_path=base_model,
-            adapter_path=checkpoint_path,
+            model_path=checkpoint_path,
             temperature=temperature,
             is_inference=args.greedy,
             batch_size=args.batch_size,
