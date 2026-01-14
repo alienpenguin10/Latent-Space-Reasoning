@@ -4,10 +4,12 @@ from unsloth import FastLanguageModel
 import os
 import json
 import torch
+import tempfile
 from datetime import datetime
 from datasets import load_dataset
 from transformers import GenerationConfig
 from tqdm import tqdm
+from huggingface_hub import HfApi
 
 from utils import *
 
@@ -19,6 +21,7 @@ def evaluate_model(
     batch_size: int = 4,
     num_samples: int = None,
     save_results: bool = True,
+    output_repo: str = None,
 ):
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name = model_path,
@@ -156,10 +159,34 @@ def evaluate_model(
     }
 
     if save_results:
-        save_path = model_path + "/eval_results.json"
-        with open(save_path, 'w') as f:
-            json.dump({'metrics': metrics, 'results': results}, f, indent=2)
-        print(f"\nResults saved to {save_path}")
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        filename = f"eval_results_{timestamp}.json"
+        data = {'metrics': metrics, 'results': results}
+
+        # Determine where to save: output_repo overrides, then check if local path
+        target_repo = output_repo if output_repo else model_path
+
+        if os.path.isdir(target_repo):
+            # Local path - save directly
+            save_path = os.path.join(target_repo, filename)
+            with open(save_path, 'w') as f:
+                json.dump(data, f, indent=2)
+            print(f"\nResults saved to {save_path}")
+        else:
+            # HuggingFace repo - upload
+            api = HfApi()
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+                json.dump(data, f, indent=2)
+                temp_path = f.name
+
+            api.upload_file(
+                path_or_fileobj=temp_path,
+                path_in_repo=filename,
+                repo_id=target_repo,
+                repo_type="model",
+            )
+            os.unlink(temp_path)
+            print(f"\nResults uploaded to https://huggingface.co/{target_repo}/{filename}")
 
     return metrics
 
@@ -170,6 +197,7 @@ if __name__ == "__main__":
     parser.add_argument("--greedy", type=bool, default=True)
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--model_path", type=str, required=True, help="HuggingFace model ID or local path")
+    parser.add_argument("--output_repo", type=str, default=None, help="HuggingFace repo to upload results (defaults to model_path)")
     parser.add_argument("--temperature", type=float, default=0.5, help="Temperature (only used for metadata)")
     parser.add_argument("--force_eval", action="store_true", help="Run evaluation even if results exist")
     args = parser.parse_args()
@@ -203,6 +231,7 @@ if __name__ == "__main__":
             batch_size=args.batch_size,
             num_samples=None,
             save_results=True,
+            output_repo=args.output_repo,
         )
     else:
         print(f"Evaluation results already exist for {model_path}. Use --force_eval to re-run.")
