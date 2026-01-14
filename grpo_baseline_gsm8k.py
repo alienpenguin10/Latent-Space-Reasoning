@@ -9,9 +9,12 @@ from trl import GRPOConfig, GRPOTrainer
 from datasets import load_dataset, Dataset
 # from patch import patch_trainer_optimizer # HRPO specific
 from utils import *
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 os.environ["WANDB_PROJECT"] = "latent-space-reasoning"
-
 
 def preprocess_gsm8k(split="train", chunk_size=1000) -> Dataset:
     dataset = load_dataset('openai/gsm8k', 'main')[split]
@@ -74,8 +77,7 @@ def main(args):
         max_prompt_length = args.max_prompt_length,
         max_completion_length = args.max_completion_length,
         num_train_epochs = 1,
-        save_steps = 250,
-        save_total_limit = 3,
+        save_strategy = "no",
         report_to = "wandb",
         output_dir = exp_name,
     )
@@ -93,10 +95,15 @@ def main(args):
     # Removed patch_trainer_optimizer (HRPO specific)
     trainer.train()
 
+    
+    # Save the final merged model locally
+    print(f"Saving final merged model to {exp_name}")
+    model.save_pretrained_merged(exp_name, tokenizer, save_method="merged_16bit")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--lora_rank", type=int, default=32)
+
 
     parser.add_argument("--lr", type=float, default=5e-6)
     parser.add_argument("--beta", type=float, default=0.005)
@@ -117,5 +124,10 @@ if __name__ == "__main__":
     parser.add_argument("--model_name", type=str, default="Qwen/Qwen2.5-1.5B-Instruct")
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
+
+    # Set keys from env if present (overrides if passed/set before)
+    if not os.environ.get("WANDB_API_KEY"):
+         print("Warning: WANDB_API_KEY not found in environment.")
+    
 
     main(args)
