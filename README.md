@@ -21,3 +21,14 @@ CUDA_VISIBLE_DEVICES=0 python eval_baseline_gsm8k.py --checkpoint_path ./experim
 CUDA_VISIBLE_DEVICES=0 python eval_baseline_gsm8k.py --model_path Alienpenguin10/Qwen2.5-1.5B-Instruct-gsm8k-baseline-group8-lora32-temp0.5 --batch_size 64 --greedy
 ### Base Model
 CUDA_VISIBLE_DEVICES=0 python eval_baseline_gsm8k.py --model_path Qwen/Qwen2.5-1.5B-Instruct --batch_size 64 --greedy --output_repo Alienpenguin10/BASE
+
+CUDA_VISIBLE_DEVICES=0 python train_grpo.py
+
+
+Hugging Face Checkpoint Path
+
+CUDA_VISIBLE_DEVICES=0 python eval_baseline_gsm8k.py --model_path Alienpenguin10/Qwen2.5-1.5B-Instruct-gsm8k-baseline-group8-lora32-temp0.5 --batch_size 64 --greedy
+CUDA_VISIBLE_DEVICES=0 python eval_baseline_gsm8k.py --model_path Alienpenguin10/GRPO2 --batch_size 64 --greedy True
+
+Base Model
+CUDA_VISIBLE_DEVICES=0 python eval_baseline_gsm8k.py --model_path Qwen/Qwen2.5-1.5B-Instruct --batch_size 64 --greedy --output_repo Alienpenguin10/BASE
