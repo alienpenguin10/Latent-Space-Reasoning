@@ -371,10 +371,7 @@ class GRPOTrainer(BaseTrainer):
                 "Liger Kernels currently only support token-level importance sampling. Please set"
                 "`importance_sampling_level` to 'token'."
             )
-        # NOTE: M3PO MOD: enable_cross_path
-        self.enable_cross_path = args.enable_cross_path
-        self.cross_path_lambda = args.cross_path_lambda
-        self.cross_path_temp = args.cross_path_temp
+
         # Datasets
         self.shuffle_dataset = args.shuffle_dataset
 
@@ -1292,34 +1289,9 @@ class GRPOTrainer(BaseTrainer):
                 torch.no_grad(),
                 FSDP.summon_full_params(self.model_wrapped, recurse=False) if self.is_fsdp_enabled else nullcontext(),
             ):
-                # M3PO: Build cross-path config for collaborative reasoning (TRAINING ONLY)
-                enable_m3po = self.enable_cross_path
-                # GRPO manually duplicates prompts, so use self.num_generations directly
-                # NOT generation_config.num_return_sequences (which would cause double expansion)
-                num_generations = self.num_generations
-                
-                # Build kwargs for generation
-                generate_kwargs = {**generate_inputs, 'generation_config': self.generation_config, 'disable_compile': True}
-                
-                # Only enable M3PO if we're generating multiple paths (safety check)
-                if enable_m3po and num_generations > 1:
-                    generate_kwargs.update({
-                        'enable_cross_path': True,
-                        'cross_path_config': {
-                            'num_generations': num_generations,
-                            'lambda_blend': getattr(self, 'cross_path_lambda', 0.1),
-                            'temperature': getattr(self, 'cross_path_temp', 0.1),
-                            'thinking_mask': None,  # Optional: could track finished sequences
-                        }
-                    })
-                else:
-                    generate_kwargs.update({
-                        'enable_cross_path': False
-                    })
-                    
-                
-                prompt_completion_ids = unwrapped_model.generate(**generate_kwargs)
-
+                prompt_completion_ids = unwrapped_model.generate(
+                    **generate_inputs, generation_config=self.generation_config, disable_compile=True
+                )
             # Compute prompt length and extract completion ids
             prompt_ids, prompt_mask = generate_inputs["input_ids"], generate_inputs["attention_mask"]
             prompt_length = prompt_ids.size(1)

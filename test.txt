@@ -1,0 +1,119 @@
+Unsloth 2025.12.7 patched 28 layers with 28 QKV layers, 28 O layers and 28 MLP layers.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+DEBUG: transformers path: /mnt/vurm/homes/homes/vk545/Neuralese/H3PO/transformers/src/transformers/__init__.py
+DEBUG: sys.path: ['/mnt/vurm/homes/homes/vk545/Neuralese/H3PO/trl', '/mnt/vurm/homes/homes/vk545/Neuralese/H3PO/transformers/src', '/mnt/vurm/homes/homes/vk545/Neuralese/H3PO/unsloth', '/mnt/vurm/homes/homes/vk545/Neuralese/H3PO', '/homes/vk545/Neuralese/miniconda3/envs/sloth/lib/python311.zip', '/homes/vk545/Neuralese/miniconda3/envs/sloth/lib/python3.11', '/homes/vk545/Neuralese/miniconda3/envs/sloth/lib/python3.11/lib-dynload', '/homes/vk545/Neuralese/miniconda3/envs/sloth/lib/python3.11/site-packages', '/mnt/vurm/homes/homes/vk545/Neuralese/H3PO/transformers/src', '__editable__.trl-0.24.0.finder.__path_hook__', '__editable__.unsloth-2025.12.7.finder.__path_hook__', '/tmp/tmpwcgymh9p']
+GPUs available: 1
+View logs at: http://localhost:6007
+To stop tensorboard: kill 1734715
+Unsloth: UnslothBCOTrainer is already patched.
+Unsloth: UnslothCPOTrainer is already patched.
+Unsloth: UnslothDPOTrainer is already patched.
+Unsloth: UnslothGKDTrainer is already patched.
+Unsloth: UnslothGRPOTrainer is already patched.
+Unsloth: UnslothKTOTrainer is already patched.
+Unsloth: UnslothNashMDTrainer is already patched.
+Unsloth: UnslothOnlineDPOTrainer is already patched.
+Unsloth: UnslothORPOTrainer is already patched.
+Unsloth: UnslothPPOTrainer is already patched.
+Unsloth: UnslothPRMTrainer is already patched.
+Unsloth: UnslothRewardTrainer is already patched.
+Unsloth: UnslothRLOOTrainer is already patched.
+Unsloth: UnslothSFTTrainer is already patched.
+Unsloth: UnslothXPOTrainer is already patched.
+Loading model...
+==((====))==  Unsloth 2025.12.7: Fast Qwen2 patching. Transformers: 4.57.3.
+   \\   /|    NVIDIA GeForce RTX 3090. Num GPUs = 4. Max memory: 23.57 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.9.1+cu128. CUDA: 8.6. CUDA Toolkit: 12.8. Triton: 3.5.1
+\        /    Bfloat16 = TRUE. FA [Xformers = 0.0.33.post2. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Unsloth: Fast downloading is enabled - ignore downloading bars which are red colored!
+Model loaded: qwen/Qwen2.5-1.5B-Instruct
+Padding side: left
+Qwen2ForCausalLM(
+  (model): Qwen2Model(
+    (embed_tokens): Embedding(151936, 1536, padding_idx=151654)
+    (layers): ModuleList(
+      (0-27): 28 x Qwen2DecoderLayer(
+        (self_attn): Qwen2Attention(
+          (q_proj): Linear(in_features=1536, out_features=1536, bias=True)
+          (k_proj): Linear(in_features=1536, out_features=256, bias=True)
+          (v_proj): Linear(in_features=1536, out_features=256, bias=True)
+          (o_proj): Linear(in_features=1536, out_features=1536, bias=False)
+          (rotary_emb): LlamaRotaryEmbedding()
+        )
+        (mlp): Qwen2MLP(
+          (gate_proj): Linear(in_features=1536, out_features=8960, bias=False)
+          (up_proj): Linear(in_features=1536, out_features=8960, bias=False)
+          (down_proj): Linear(in_features=8960, out_features=1536, bias=False)
+          (act_fn): SiLUActivation()
+        )
+        (input_layernorm): Qwen2RMSNorm((1536,), eps=1e-06)
+        (post_attention_layernorm): Qwen2RMSNorm((1536,), eps=1e-06)
+      )
+    )
+    (norm): Qwen2RMSNorm((1536,), eps=1e-06)
+    (rotary_emb): LlamaRotaryEmbedding()
+  )
+  (lm_head): Linear(in_features=1536, out_features=151936, bias=False)
+)
+Model with LoRA applied:
+trainable params: 36,929,536 || all params: 1,580,643,840 || trainable%: 2.3364
+None
+Map: 100%|██████████| 7473/7473 [00:00<?, ? examples/s]Map: 11473 examples [00:00, 31075.94 examples/s]       Map: 14946 examples [00:00, 31289.74 examples/s]Map: 14946 examples [00:00, 28826.47 examples/s]
+The model is already on multiple devices. Skipping the move to device specified in `args`.
+==((====))==  Unsloth - 2x faster free finetuning | Num GPUs used = 1
+   \\   /|    Num examples = 1 | Num Epochs = 1 | Total steps = 1
+O^O/ \_/ \    Batch size per device = 2 | Gradient accumulation steps = 4
+\        /    Data Parallel GPUs = 1 | Total batch size (2 x 4 x 1) = 8
+ "-____-"     Trainable parameters = 36,929,536 of 1,580,643,840 (2.34% trained)
+Test run: using 1 examples
+Training on 1 examples.
+Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did Natalia sell altogether in April and May?
+
+Example GRPO prompt:
+[{'content': 'A conversation between User and Assistant. The user asks a question, and the assistant solves it. The assistant first thinks about the reasoning process in the mind and then provides the user with the answer. The final answer is provided after the #### tag, i.e., {reasoning process} #### {answer}.', 'role': 'system'}, {'content': 'Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did Natalia sell altogether in April and May?', 'role': 'user'}]
+
+Ground truth answer: 72
+
+============================================================
+GRPO Training Configuration
+============================================================
+Model: qwen/Qwen2.5-1.5B-Instruct
+Dataset: openai/gsm8k
+Training examples: 1
+Batch size per device: 2
+Gradient accumulation steps: 4
+Effective batch size: 8
+Num generations per prompt: 8
+Max prompt length: 1024
+Max completion length: 1024
+Learning rate: 5e-06
+Beta (KL penalty): 0.005
+Temperature: 0.5
+Epochs: 1
+--- M3PO Configuration ---
+M3PO enabled: True
+M3PO lambda (blending): 0.1
+M3PO temperature: 0.1
+============================================================
+
+GPU = NVIDIA GeForce RTX 3090. Max memory = 23.57 GB.
+3.061 GB of memory reserved.
+🔌 Dist available: True initialized: False
+
+🚀 Starting GRPO training...
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [01:02<00:00, 62.48s/it]                                             100%|██████████| 1/1 [01:02<00:00, 62.48s/it]                                             100%|██████████| 1/1 [01:07<00:00, 62.48s/it]100%|██████████| 1/1 [01:07<00:00, 67.23s/it]
+Unsloth: Will smartly offload gradients to save VRAM!
+{'loss': 0.0, 'grad_norm': 0.003093297826126218, 'learning_rate': 0.0, 'num_tokens': 2338.0, 'completions/mean_length': 179.25, 'completions/min_length': 147.0, 'completions/max_length': 208.0, 'completions/clipped_ratio': 0.0, 'completions/mean_terminated_length': 179.25, 'completions/min_terminated_length': 147.0, 'completions/max_terminated_length': 208.0, 'rewards/reward_func/mean': 0.0, 'rewards/reward_func/std': 0.0, 'reward': 0.0, 'reward_std': 0.0, 'frac_reward_zero_std': 1.0, 'completion_length': 179.25, 'kl': 0.0006885097973281518, 'epoch': 1.0}
+{'train_runtime': 67.2675, 'train_samples_per_second': 0.015, 'train_steps_per_second': 0.015, 'train_loss': 3.4425493140588515e-06, 'epoch': 1.0}
+67.2675 seconds used for training.
+1.12 minutes used for training.
+Peak reserved memory = 3.594 GB.
+Peak reserved memory for training = 0.533 GB.
+Peak reserved memory % of max memory = 15.248 %.
+Peak reserved memory for training % of max memory = 2.261 %.
+Saving and/or pushing as grpo-Qwen2.5-1.5B-Instruct-gsm8k-20260112_162103 and Trelis/grpo-Qwen2.5-1.5B-Instruct-gsm8k-20260112_162103
+📦 Saving model to grpo-Qwen2.5-1.5B-Instruct-gsm8k-20260112_162103/...
+✅ Model saved to grpo-Qwen2.5-1.5B-Instruct-gsm8k-20260112_162103/
+Training completed successfully!

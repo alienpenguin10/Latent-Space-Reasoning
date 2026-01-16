@@ -636,6 +636,29 @@ class GRPOConfig(TrainingArguments):
         },
     )
 
+    # Parameters that control M3PO (Multi-Path Collaborative Reasoning)
+    enable_cross_path: bool = field(
+        default=False,
+        metadata={
+            "help": "Enable M3PO cross-path collaborative reasoning during generation. When enabled, multiple "
+            "reasoning paths share information through attention-weighted blending of hidden states."
+        },
+    )
+    cross_path_lambda: float = field(
+        default=0.1,
+        metadata={
+            "help": "Blending coefficient for M3PO cross-path interaction (0-1). Controls how much contextual "
+            "information from other paths is incorporated. 0 = no blending, 1 = full contextual replacement."
+        },
+    )
+    cross_path_temp: float = field(
+        default=0.1,
+        metadata={
+            "help": "Temperature for M3PO cross-path attention softmax. Lower values make attention sharper "
+            "(focus on most similar paths), higher values spread attention more evenly."
+        },
+    )
+
     def __post_init__(self):
         self.bf16 = not (self.fp16) if self.bf16 is None else self.bf16
 

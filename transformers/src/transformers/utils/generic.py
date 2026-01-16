@@ -844,7 +844,10 @@ class TransformersKwargs(TypedDict, total=False):
     cu_seq_lens_k: Optional["torch.LongTensor"]
     max_length_q: Optional[int]
     max_length_k: Optional[int]
-
+    enable_cross_path: Optional[bool]
+    cross_path_lambda: Optional[float]
+    cross_path_temp: Optional[float]
+    cross_path_config: Optional[dict]
 
 def is_timm_config_dict(config_dict: dict[str, Any]) -> bool:
     """Checks whether a config dict is a timm config dict."""

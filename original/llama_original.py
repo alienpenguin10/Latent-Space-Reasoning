@@ -188,9 +188,6 @@ def _fast_prepare_inputs_for_generation(
                         # transformers <= 4.51.3 includes device arg but > 4.51.3 does not
                         return transformers_version < Version("4.52.0")
 
-                # M3PO: Preserve custom kwargs before overwriting
-                m3po_kwargs = {k: v for k, v in kwargs.items() if k in ('enable_cross_path', 'cross_path_config')}
-
                 kwargs = {
                     "sequence_length": 1,
                     "target_length": cache_length,
@@ -202,9 +199,6 @@ def _fast_prepare_inputs_for_generation(
                     "config": self.config,
                     "past_key_values": past_key_values,
                 }
-                
-                # M3PO: Restore preserved kwargs
-                kwargs.update(m3po_kwargs)
                 try:
                     if needs_device_kw(
                         base_model._prepare_4d_causal_attention_mask_with_cache_position
@@ -1272,12 +1266,6 @@ def CausalLM_fast_forward(fast_forward_inference):
         *args,
         **kwargs,
     ) -> Union[Tuple, CausalLMOutputWithPast]:
-        import os  # Required for UNSLOTH_RETURN_HIDDEN_STATES and M3PO_DEBUG checks
-        
-        # DEBUG: Print to verify forward is called and check kwargs
-        if os.environ.get('M3PO_DEBUG', '0') == '1':
-            print(f"[M3PO DEBUG] CausalLM_fast_forward called, enable_cross_path={kwargs.get('enable_cross_path', 'NOT_PRESENT')}, kwargs.keys={list(kwargs.keys())[:10]}")
-        
         if past_key_values is not None:
             outputs = fast_forward_inference(
                 self,
@@ -1321,55 +1309,6 @@ def CausalLM_fast_forward(fast_forward_inference):
                 **kwargs,
             )
         hidden_states = outputs[0]
-
-        # M3PO: Apply cross-path collaborative reasoning (TRAINING ONLY)
-        # Safety: Only run if num_return_sequences > 1 to avoid mixing different questions
-        if kwargs.get('enable_cross_path', False):
-            cross_path_config = kwargs.get('cross_path_config')
-            num_generations = cross_path_config.get('num_generations')
-            
-            # DEBUG: Print M3PO activation info
-            if os.environ.get('M3PO_DEBUG', '0') == '1':
-                print(f"[M3PO DEBUG] hidden_states.shape={hidden_states.shape}, num_generations={num_generations}, batch % num_gen = {hidden_states.shape[0] % num_generations}")
-            
-            # CRITICAL CHECK: Only blend if we actually have multiple paths per question
-            if num_generations > 1 and hidden_states.shape[0] % num_generations == 0:
-                from .m3po_module import apply_cross_path_interaction_batch
-                
-                # Extract last token hidden states (where we'll apply M3PO)
-                if hidden_states.dim() == 3:
-                    last_hidden = hidden_states[:, -1, :]  # (batch*N, hidden_dim)
-                else:
-                    last_hidden = hidden_states  # Already (batch*N, hidden_dim)
-                
-                if os.environ.get('M3PO_DEBUG', '0') == '1':
-                    print(f"[M3PO DEBUG PRE BLEND] last_hidden.shape={last_hidden.shape}, last_hidden.device={last_hidden.device}, has_nan={torch.isnan(last_hidden).any().item()}, has_inf={torch.isinf(last_hidden).any().item()}")
-                
-                # Apply cross-path blending
-                blended_hidden = apply_cross_path_interaction_batch(
-                    current_embeds=last_hidden,
-                    num_generations=num_generations,
-                    thinking_mask=cross_path_config.get('thinking_mask'),
-                    lambda_blend=cross_path_config.get('lambda_blend', 0.1),
-                    temperature=cross_path_config.get('temperature', 0.1),
-                )
-                
-                if os.environ.get('M3PO_DEBUG', '0') == '1':
-                    print(f"[M3PO DEBUG POST BLEND] blended_hidden.shape={blended_hidden.shape}, blended_hidden.device={blended_hidden.device}, has_nan={torch.isnan(blended_hidden).any().item()}, has_inf={torch.isinf(blended_hidden).any().item()}")
-                
-                # Replace last token with blended version
-                if hidden_states.dim() == 3: # [batch*N, seq_len, hidden_dim]
-                    if os.environ.get('M3PO_DEBUG', '0') == '1':
-                        print(f"[M3PO DEBUG PRE REPLACE] HIDDEN STATES DIM = 3")
-                    hidden_states = hidden_states.clone() # Clones the tensor to avoid modifying the original (important for autograd)
-                    hidden_states[:, -1, :] = blended_hidden # Replaces only the last token's hidden states ([:, -1, :]) with the M3PO-blended version
-                else:
-                    if os.environ.get('M3PO_DEBUG', '0') == '1':
-                        print(f"[M3PO DEBUG PRE REPLACE] HIDDEN STATES DIM != 3")
-                    hidden_states = blended_hidden
-                   
-            else:
-                print(f"[M3PO DEBUG] Skipping M3PO blending because num_generations={num_generations} and hidden_states.shape[0]={hidden_states.shape[0]} is not divisible by num_generations")
 
         bsz, q_len, hd = hidden_states.shape
         lm_head = self.lm_head.weight
